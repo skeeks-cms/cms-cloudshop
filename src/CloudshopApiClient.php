@@ -28,14 +28,4 @@ class CloudshopApiClient extends \skeeks\yii2\cloudshopApiClient\CloudshopApiCli
             }
         }
     }
-
-    static public function descriptorConfig()
-    {
-        return array_merge(parent::descriptorConfig(), [
-            'name' => "Cloud Shop",
-            'image' => [
-                CloudshopAsset::class, 'icons/cloudshop.png'
-            ],
-        ]);
-    }
 }
