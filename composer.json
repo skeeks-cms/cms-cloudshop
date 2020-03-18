@@ -24,7 +24,7 @@
     ],
 	"require": {
 		"skeeks/cms": "^5.6 || dev-master",
-		"skeeks/cms-yii2-cloudshop-api-client": "^1.0 || dev-master"
+		"skeeks/yii2-cloudshop-api-client": "^1.0 || dev-master"
 	},
     "autoload": {
         "psr-4": {
