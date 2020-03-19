@@ -1,9 +1,8 @@
 <?php
 return [
-
-    'controllerMap' => [
-    ],
-
     'modules' => [
+        'cloudshop' => [
+            'controllerNamespace' => 'skeeks\cms\cloudshop\console\controllers',
+        ],
     ],
 ];

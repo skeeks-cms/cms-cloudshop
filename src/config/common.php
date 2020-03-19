@@ -12,6 +12,8 @@ return [
     ],
 
     'modules' => [
-
+        'cloudshop' => [
+            'class' => 'skeeks\cms\cloudshop\CloudshopModule',
+        ],
     ],
 ];
