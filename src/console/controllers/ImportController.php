@@ -32,11 +32,6 @@ class ImportController extends Controller
      */
     public function actionImportStories()
     {
-        if (!\Yii::$app->cloudshop->shopSupplier) {
-            $this->stdout("Для начала задайте поставщика в настройках компонента\n", Console::FG_RED);
-            return false;
-        }
-
         try {
             $data = \Yii::$app->cloudshopApiClient->getStoresApiMethod();
             $data = ArrayHelper::getValue($data, 'data');
@@ -47,11 +42,12 @@ class ImportController extends Controller
                 foreach ($data as $storeData) {
                     $cloudShopStoreId = ArrayHelper::getValue($storeData, '_id');
                     $cloudShopStoreName = ArrayHelper::getValue($storeData, 'name');
-                    if (!\Yii::$app->cloudshop->shopSupplier->getShopStores()->andWhere(['external_id' => $cloudShopStoreId])->exists()) {
+                    $q = ShopStore::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+                    if (!$q->andWhere(['external_id' => $cloudShopStoreId])->exists()) {
                         $shopStore = new ShopStore();
                         $shopStore->name = $cloudShopStoreName;
                         $shopStore->external_id = $cloudShopStoreId;
-                        $shopStore->shop_supplier_id = \Yii::$app->cloudshop->shopSupplier->id;
+                        $shopStore->cms_site_id = \Yii::$app->cms->site->id;
                         if (!$shopStore->save()) {
                             throw new Exception("Не создан склад: ".print_r($shopStore->errors, true));
                         }
@@ -72,38 +68,41 @@ class ImportController extends Controller
      */
     public function actionImportPrices()
     {
-        if (!\Yii::$app->cloudshop->shopSupplier) {
+        /*if (!\Yii::$app->cloudshop->shopSupplier) {
             $this->stdout("Для начала задайте поставщика в настройках компонента\n", Console::FG_RED);
             return false;
-        }
+        }*/
 
-        if (!\Yii::$app->cloudshop->shopSupplier->getShopTypePrices()->andWhere(['external_id' => 'purchase'])->exists()) {
+        $q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+        if (!$q->andWhere(['external_id' => 'purchase'])->exists()) {
             $shopTypePrice = new ShopTypePrice();
             $shopTypePrice->name = "Закупочная";
             $shopTypePrice->external_id = "purchase";
-            $shopTypePrice->shop_supplier_id = \Yii::$app->cloudshop->shopSupplier->id;
+            $shopTypePrice->cms_site_id = \Yii::$app->cms->site->id;
 
             if (!$shopTypePrice->save()) {
                 throw new Exception("Цена purchase не создана!" . print_r($shopTypePrice->errors));
             }
         }
 
-        if (!\Yii::$app->cloudshop->shopSupplier->getShopTypePrices()->andWhere(['external_id' => 'price'])->exists()) {
+        $q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+        if (!$q->andWhere(['external_id' => 'price'])->exists()) {
             $shopTypePrice = new ShopTypePrice();
             $shopTypePrice->name = "Цена продажи";
             $shopTypePrice->external_id = "price";
-            $shopTypePrice->shop_supplier_id = \Yii::$app->cloudshop->shopSupplier->id;
+            $shopTypePrice->cms_site_id = \Yii::$app->cms->site->id;
 
             if (!$shopTypePrice->save()) {
                 throw new Exception("Цена price не создана!" . print_r($shopTypePrice->errors));
             }
         }
 
-        if (!\Yii::$app->cloudshop->shopSupplier->getShopTypePrices()->andWhere(['external_id' => 'cost'])->exists()) {
+        $q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+        if (!$q->andWhere(['external_id' => 'cost'])->exists()) {
             $shopTypePrice = new ShopTypePrice();
             $shopTypePrice->name = "Себестоимость";
             $shopTypePrice->external_id = "cost";
-            $shopTypePrice->shop_supplier_id = \Yii::$app->cloudshop->shopSupplier->id;
+            $shopTypePrice->cms_site_id = \Yii::$app->cms->site->id;
 
             if (!$shopTypePrice->save()) {
                 throw new Exception("Цена cost не создана!" . print_r($shopTypePrice->errors));
@@ -119,17 +118,14 @@ class ImportController extends Controller
      */
     public function actionImportProducts()
     {
-        if (!\Yii::$app->cloudshop->shopSupplier) {
-            $this->stdout("Для начала задайте поставщика в настройках компонента\n", Console::FG_RED);
-            return false;
-        }
-
-        if (!\Yii::$app->cloudshop->shopSupplier->shopStores) {
+        $qStore = ShopStore::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+        if (!$qStore->exists()) {
             $this->stdout("Для начала импортируйте склады\n", Console::FG_RED);
             return false;
         }
 
-        if (\Yii::$app->cloudshop->shopSupplier->getShopTypePrices()->andWhere([
+        $qPrice = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+        if ($qPrice->andWhere([
             'in', 'external_id', ['purchase', 'cost', 'price']
         ])->count() != 3) {
             $this->stdout("Для начала импортируйте цены\n", Console::FG_RED);
@@ -144,8 +140,9 @@ class ImportController extends Controller
         }
 
         //Обнулить количество по всем товарам
-        if ($updated = ShopStoreProduct::updateAll(['quantity' => 0], ['in', 'shop_store_id', \Yii::$app->cloudshop->shopSupplier->getShopStores()->select([ShopStore::tableName() . '.id'])])) {
+        if ($updated = ShopStoreProduct::updateAll(['quantity' => 0], ['in', 'shop_store_id', $qStore->select([ShopStore::tableName() . '.id'])])) {
             $this->stdout("Обнулено: " . $updated . "\n", Console::FG_YELLOW);
+            sleep(5);
         }
 
 
@@ -182,14 +179,17 @@ class ImportController extends Controller
         $cloudShopStoreUnit = ArrayHelper::getValue($data, 'unit');
         $stock = ArrayHelper::getValue($data, 'stock');
 
+        $this->stdout("----------\n");
         $this->stdout("Product: $cloudShopProductId\n");
 
         /**
          * @var $shopElement ShopCmsContentElement
          */
-        $shopElement = ShopCmsContentElement::find()->joinWith('shopProduct as shopProduct')->andWhere([
-            'shopProduct.shop_supplier_id'     => \Yii::$app->cloudshop->shopSupplier->id,
-            'shopProduct.supplier_external_id' => $cloudShopProductId,
+        $shopElement = ShopCmsContentElement::find()
+            //->joinWith('shopProduct as shopProduct')
+            ->andWhere([
+            'cms_site_id'     => \Yii::$app->cms->site->id,
+            'external_id' => $cloudShopProductId,
         ])->one();
 
         $t = \Yii::$app->db->beginTransaction();
@@ -210,14 +210,13 @@ class ImportController extends Controller
                 $shopElement = new ShopCmsContentElement();
                 $shopElement->content_id = $this->_content_id;
                 $shopElement->name = $cloudShopProductName;
+                $shopElement->external_id = (string)$cloudShopProductId;
                 if (!$shopElement->save()) {
                     throw new Exception("Не создан элемент: ".print_r($shopElement->errors, true));
                 }
 
                 $shopProduct = new ShopProduct();
                 $shopProduct->id = $shopElement->id;
-                $shopProduct->shop_supplier_id = \Yii::$app->cloudshop->shopSupplier->id;
-                $shopProduct->supplier_external_id = (string)$cloudShopProductId;
 
                 if (!$shopProduct->save()) {
                     throw new Exception("Не создан товар: ".print_r($shopProduct->errors, true));
@@ -252,7 +251,7 @@ class ImportController extends Controller
         } catch (\Exception $e) {
             $t->rollBack();
             $this->stdout("Ошибка: {$e->getMessage()}\n", Console::FG_RED);
-            //throw $e;
+            throw $e;
         }
 
     }
@@ -260,7 +259,10 @@ class ImportController extends Controller
     protected function _updateStock($restData, ShopProduct $shopProduct)
     {
         foreach ($restData as $id => $count) {
-            if (!$shopStore = \Yii::$app->cloudshop->shopSupplier->getShopStores()->andWhere(['external_id' => $id])->one()) {
+            
+            $qStore = ShopStore::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+                
+            if (!$shopStore = $qStore->andWhere(['external_id' => $id])->one()) {
                 throw new Exception("Склада нет!");
             }
 
@@ -284,9 +286,11 @@ class ImportController extends Controller
     protected function _updatePrices($data, ShopProduct $shopProduct)
     {
         foreach ($data as $priceCode => $value) {
-            if (!$typePrice = \Yii::$app->cloudshop->shopSupplier->getShopTypePrices()->andWhere(['external_id' => $priceCode])->one()) {
+            $qPrice = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+            
+            if (!$typePrice = $qPrice->andWhere(['external_id' => $priceCode])->one()) {
                 $typePrice = new ShopTypePrice();
-                $typePrice->shop_supplier_id = \Yii::$app->cloudshop->shopSupplier->id;
+                $typePrice->cms_site_id = \Yii::$app->cms->site->id;
                 $typePrice->external_id = $priceCode;
                 $typePrice->name = $priceCode;
 

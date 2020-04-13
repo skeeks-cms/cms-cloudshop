@@ -26,7 +26,6 @@ class CloudshopComponent extends Component
 {
     public $email;
     public $password;
-    public $shop_supplier_id;
 
     static public function descriptorConfig()
     {
@@ -57,12 +56,6 @@ class CloudshopComponent extends Component
                 ],
                 'string',
             ],
-            [
-                [
-                    'shop_supplier_id',
-                ],
-                'integer',
-            ],
         ];
     }
 
@@ -78,19 +71,7 @@ class CloudshopComponent extends Component
                     'password',
                 ],
             ],
-            'cms'     => [
-                'class' => FieldSet::class,
-                'name'  => \Yii::t('skeeks/shop/app', 'Настройки CMS'),
-
-                'fields' => [
-                    'shop_supplier_id' => [
-                        'class' => SelectField::class,
-                        'items' => ArrayHelper::map(
-                            ShopSupplier::find()->all(), 'id', 'asText'
-                        ),
-                    ],
-                ],
-            ],
+            
         ];
     }
 
@@ -98,23 +79,13 @@ class CloudshopComponent extends Component
     {
         return [
             'password'         => 'Пароль',
-            'shop_supplier_id' => 'Поставщик',
         ];
     }
 
     public function attributeHints()
     {
         return [
-            'shop_supplier_id' => 'Выберите поставщика/магазин в который будут загружаться товары.',
         ];
-    }
-
-    /**
-     * @return ShopSupplier|null
-     */
-    public function getShopSupplier()
-    {
-        return ShopSupplier::findOne($this->shop_supplier_id);
     }
 
     /**
@@ -141,7 +112,7 @@ class CloudshopComponent extends Component
                         $shopStore = new ShopStore();
                         $shopStore->name = $cloudShopStoreName;
                         $shopStore->external_id = $cloudShopStoreId;
-                        $shopStore->shop_supplier_id = $this->shopSupplier->id;
+                        $shopStore->cms_site_id = \Yii::$app->cms->site->id;
                         if (!$shopStore->save()) {
                             throw new Exception("Не создан склад: ".print_r($shopStore->errors, true));
                         }
