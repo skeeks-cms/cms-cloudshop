@@ -112,7 +112,7 @@ class CloudshopComponent extends Component
                         $shopStore = new ShopStore();
                         $shopStore->name = $cloudShopStoreName;
                         $shopStore->external_id = $cloudShopStoreId;
-                        $shopStore->cms_site_id = \Yii::$app->cms->site->id;
+                        $shopStore->cms_site_id = \Yii::$app->skeeks->site->id;
                         if (!$shopStore->save()) {
                             throw new Exception("Не создан склад: ".print_r($shopStore->errors, true));
                         }

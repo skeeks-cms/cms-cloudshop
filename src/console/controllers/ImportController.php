@@ -42,12 +42,12 @@ class ImportController extends Controller
                 foreach ($data as $storeData) {
                     $cloudShopStoreId = ArrayHelper::getValue($storeData, '_id');
                     $cloudShopStoreName = ArrayHelper::getValue($storeData, 'name');
-                    $q = ShopStore::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+                    $q = ShopStore::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
                     if (!$q->andWhere(['external_id' => $cloudShopStoreId])->exists()) {
                         $shopStore = new ShopStore();
                         $shopStore->name = $cloudShopStoreName;
                         $shopStore->external_id = $cloudShopStoreId;
-                        $shopStore->cms_site_id = \Yii::$app->cms->site->id;
+                        $shopStore->cms_site_id = \Yii::$app->skeeks->site->id;
                         if (!$shopStore->save()) {
                             throw new Exception("Не создан склад: ".print_r($shopStore->errors, true));
                         }
@@ -73,36 +73,36 @@ class ImportController extends Controller
             return false;
         }*/
 
-        $q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+        $q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
         if (!$q->andWhere(['external_id' => 'purchase'])->exists()) {
             $shopTypePrice = new ShopTypePrice();
             $shopTypePrice->name = "Закупочная";
             $shopTypePrice->external_id = "purchase";
-            $shopTypePrice->cms_site_id = \Yii::$app->cms->site->id;
+            $shopTypePrice->cms_site_id = \Yii::$app->skeeks->site->id;
 
             if (!$shopTypePrice->save()) {
                 throw new Exception("Цена purchase не создана!" . print_r($shopTypePrice->errors));
             }
         }
 
-        $q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+        $q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
         if (!$q->andWhere(['external_id' => 'price'])->exists()) {
             $shopTypePrice = new ShopTypePrice();
             $shopTypePrice->name = "Цена продажи";
             $shopTypePrice->external_id = "price";
-            $shopTypePrice->cms_site_id = \Yii::$app->cms->site->id;
+            $shopTypePrice->cms_site_id = \Yii::$app->skeeks->site->id;
 
             if (!$shopTypePrice->save()) {
                 throw new Exception("Цена price не создана!" . print_r($shopTypePrice->errors));
             }
         }
 
-        $q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+        $q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
         if (!$q->andWhere(['external_id' => 'cost'])->exists()) {
             $shopTypePrice = new ShopTypePrice();
             $shopTypePrice->name = "Себестоимость";
             $shopTypePrice->external_id = "cost";
-            $shopTypePrice->cms_site_id = \Yii::$app->cms->site->id;
+            $shopTypePrice->cms_site_id = \Yii::$app->skeeks->site->id;
 
             if (!$shopTypePrice->save()) {
                 throw new Exception("Цена cost не создана!" . print_r($shopTypePrice->errors));
@@ -118,13 +118,13 @@ class ImportController extends Controller
      */
     public function actionImportProducts()
     {
-        $qStore = ShopStore::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+        $qStore = ShopStore::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
         if (!$qStore->exists()) {
             $this->stdout("Для начала импортируйте склады\n", Console::FG_RED);
             return false;
         }
 
-        $qPrice = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+        $qPrice = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
         if ($qPrice->andWhere([
             'in', 'external_id', ['purchase', 'cost', 'price']
         ])->count() != 3) {
@@ -188,7 +188,7 @@ class ImportController extends Controller
         $shopElement = ShopCmsContentElement::find()
             //->joinWith('shopProduct as shopProduct')
             ->andWhere([
-            'cms_site_id'     => \Yii::$app->cms->site->id,
+            'cms_site_id'     => \Yii::$app->skeeks->site->id,
             'external_id' => $cloudShopProductId,
         ])->one();
 
@@ -260,7 +260,7 @@ class ImportController extends Controller
     {
         foreach ($restData as $id => $count) {
             
-            $qStore = ShopStore::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+            $qStore = ShopStore::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
                 
             if (!$shopStore = $qStore->andWhere(['external_id' => $id])->one()) {
                 throw new Exception("Склада нет!");
@@ -286,11 +286,11 @@ class ImportController extends Controller
     protected function _updatePrices($data, ShopProduct $shopProduct)
     {
         foreach ($data as $priceCode => $value) {
-            $qPrice = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->cms->site->id]);
+            $qPrice = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
             
             if (!$typePrice = $qPrice->andWhere(['external_id' => $priceCode])->one()) {
                 $typePrice = new ShopTypePrice();
-                $typePrice->cms_site_id = \Yii::$app->cms->site->id;
+                $typePrice->cms_site_id = \Yii::$app->skeeks->site->id;
                 $typePrice->external_id = $priceCode;
                 $typePrice->name = $priceCode;
 
