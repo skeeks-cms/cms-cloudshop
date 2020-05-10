@@ -16,6 +16,7 @@ use skeeks\cms\shop\models\ShopStore;
 use skeeks\cms\shop\models\ShopStoreProduct;
 use skeeks\cms\shop\models\ShopTypePrice;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\console\Controller;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Console;
@@ -25,6 +26,14 @@ use yii\helpers\Console;
  */
 class ImportController extends Controller
 {
+    public function init()
+    {
+        if (!\Yii::$app->skeeks->site) {
+            throw new InvalidConfigException("Не указан сайт");
+        }
+        
+        parent::init();
+    }
     /**
      * Импорт складов из clodushop в cms
      * @return bool
