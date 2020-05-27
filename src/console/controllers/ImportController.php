@@ -242,8 +242,13 @@ class ImportController extends Controller
 
 
             //Оновление наличия
-            $this->stdout("\tОбновление наличия\n");
-            $this->_updateStock($stock, $shopProduct);
+            if ($stock) {
+                $this->stdout("\tОбновление наличия\n");
+                $this->_updateStock($stock, $shopProduct);
+            } else {
+                $this->stdout("\tТовар без наличия\n");
+            }
+
 
 
             $this->stdout("\tОбновление цен\n");
