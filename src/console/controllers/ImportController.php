@@ -244,7 +244,7 @@ class ImportController extends Controller
 
             //Оновление наличия
             if ($stock) {   
-                $this->stdout("\tОбновление наличия: " . print_r($stock) . "\n\r");
+                $this->stdout("\tОбновление наличия: " . print_r($stock, true) . "\n\r");
                 $this->_updateStock($stock, $shopProduct);
             } else {
                 $this->stdout("\tТовар без наличия\n");
@@ -288,10 +288,8 @@ class ImportController extends Controller
                 $shopStoreProduct->shop_product_id = $shopProduct->id;
             }
 
-            print_r($shopStoreProduct->id);
-            die;
-
             $shopStoreProduct->quantity = $count;
+
             if (!$shopStoreProduct->save()) {
                 throw new Exception("Не создан наличие на складе: " . print_r($shopStoreProduct->errors, true));
             }
