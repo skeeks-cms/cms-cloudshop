@@ -208,7 +208,7 @@ class ImportController extends Controller
 
 
             if ($shopElement) {
-                $this->stdout("Exist\n", Console::FG_YELLOW);
+                $this->stdout("Exist {$shopElement->id}\n", Console::FG_YELLOW);
                 $shopProduct = $shopElement->shopProduct;
                 $shopElement->content_id = $this->_content_id;
                 $shopElement->save();
