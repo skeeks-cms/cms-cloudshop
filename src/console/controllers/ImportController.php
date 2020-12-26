@@ -187,6 +187,7 @@ class ImportController extends Controller
         $cloudShopProductId = ArrayHelper::getValue($data, '_id');
         $cloudShopProductName = ArrayHelper::getValue($data, 'name');
         $cloudShopStoreUnit = ArrayHelper::getValue($data, 'unit');
+        $cloudShopBarcode = explode(",", ArrayHelper::getValue($data, 'barcode'));
         $stock = ArrayHelper::getValue($data, 'stock');
 
         $this->stdout("----------\n");
@@ -236,6 +237,7 @@ class ImportController extends Controller
             }
 
             $shopProduct->supplier_external_jsondata = $data;
+            $shopProduct->barcodes = $cloudShopBarcode;
 
             if (!$shopProduct->save()) {
                 throw new Exception("Данные по товару не обновлены: ".print_r($shopProduct->errors, true), Console::FG_GREEN);
