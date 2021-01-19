@@ -136,8 +136,12 @@ class ImportController extends Controller
 
         $qPrice = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
         if ($qPrice->andWhere([
-            'in', 'external_id', ['purchase', 'cost', 'price']
-        ])->count() != 3) {
+            'in', 'external_id', [
+                    'purchase',
+                    //'cost',
+                    'price'
+                ]
+        ])->count() != 2) {
             $this->stdout("Для начала импортируйте цены\n", Console::FG_RED);
             return false;
         }
@@ -307,6 +311,8 @@ class ImportController extends Controller
             $qPrice = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
             
             if (!$typePrice = $qPrice->andWhere(['external_id' => $priceCode])->one()) {
+                continue;
+                /*
                 $typePrice = new ShopTypePrice();
                 $typePrice->cms_site_id = \Yii::$app->skeeks->site->id;
                 $typePrice->external_id = $priceCode;
@@ -316,7 +322,7 @@ class ImportController extends Controller
                     throw new Exception("Не сохранен тип цены: ".print_r($typePrice->errors, true));
                 }
 
-                $this->stdout("\tСоздана цена: {$priceCode}\n", Console::FG_GREEN);
+                $this->stdout("\tСоздана цена: {$priceCode}\n", Console::FG_GREEN);*/
             }
 
             $value = (float)$value;
