@@ -334,6 +334,7 @@ class ImportController extends Controller
                 $price->product_id = $shopProduct->id;
             }
 
+            $price->is_fixed = 1;
             $price->price = $value;
             $price->currency_code = "RUB";
 
