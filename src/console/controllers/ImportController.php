@@ -128,7 +128,20 @@ class ImportController extends Controller
      */
     public function actionImportProducts()
     {
-        $qStore = ShopStore::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
+        $qStore = ShopStore::find()
+            ->cmsSite()
+        ;
+
+        //Склады
+        $data = \Yii::$app->cloudshopApiClient->getStoresApiMethod();
+        $data = ArrayHelper::getValue($data, 'data');
+        $storeExternalIds = [];
+        if (is_array($data)) {
+            $storeExternalIds = ArrayHelper::map($data, "_id", "_id");
+        }
+
+        $qStore->andWhere(['external_id' => $storeExternalIds]);
+
         if (!$qStore->exists()) {
             $this->stdout("Для начала импортируйте склады\n", Console::FG_RED);
             return false;
