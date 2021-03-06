@@ -239,6 +239,7 @@ class ImportController extends Controller
                 $shopElement->content_id = $this->_content_id;
                 $shopElement->name = $cloudShopProductName;
                 $shopElement->external_id = (string)$cloudShopProductId;
+                $shopElement->active = "N";
                 if (!$shopElement->save()) {
                     throw new Exception("Не создан элемент: ".print_r($shopElement->errors, true));
                 }
@@ -253,6 +254,7 @@ class ImportController extends Controller
                 $this->stdout("\tТовар создан {$shopProduct->id}\n", Console::FG_GREEN);
             }
 
+            $shopProduct->quantity = 0;
             $shopProduct->supplier_external_jsondata = $data;
             $shopProduct->barcodes = $cloudShopBarcode;
 
