@@ -233,25 +233,65 @@ class ImportController extends Controller
 
             } else {
 
-                $this->stdout("Creating...\n");
 
-                $shopElement = new ShopCmsContentElement();
-                $shopElement->content_id = $this->_content_id;
-                $shopElement->name = $cloudShopProductName;
-                $shopElement->external_id = (string)$cloudShopProductId;
-                $shopElement->active = "N";
-                if (!$shopElement->save()) {
-                    throw new Exception("Не создан элемент: ".print_r($shopElement->errors, true));
+                $this->stdout("Проверка товара по штрихкоду ...\n");
+
+                $isCreateNew = true;
+                //Если указан штрихкод
+                if ($cloudShopBarcode) {
+
+                    //Ищем уже созданный товар с таким штрихкодом
+                    $queryFindByBarcode = ShopCmsContentElement::find()
+                        ->joinWith("shopProduct as shopProduct")
+                        ->joinWith("shopProduct.shopProductBarcodes as shopProductBarcodes")
+                        ->andWhere([
+                            'shopProductBarcodes.value' => $cloudShopBarcode
+                        ])
+                        ->andWhere([
+                            "or",
+                            [ShopCmsContentElement::tableName() . '.external_id' => null],
+                            [ShopCmsContentElement::tableName() . '.external_id' => ""],
+                        ])
+                    ;
+
+                    //Елси такой товар найден один то нужно с ним связать клаудшоп
+                    if ($queryFindByBarcode->count() == 1) {
+                        $isCreateNew = false;
+                        $shopElement = $queryFindByBarcode->one();
+                        $shopElement->external_id = (string)$cloudShopProductId;
+                        if (!$shopElement->save()) {
+                            throw new Exception("Не создан элемент: " . print_r($shopElement->errors, true));
+                        }
+
+                        $shopProduct = $shopElement->shopProduct;
+
+                        $this->stdout("\tТовар обновлен {$shopElement->id}\n", Console::FG_GREEN);
+                    }
                 }
 
-                $shopProduct = new ShopProduct();
-                $shopProduct->id = $shopElement->id;
 
-                if (!$shopProduct->save()) {
-                    throw new Exception("Не создан товар: ".print_r($shopProduct->errors, true));
+                if ($isCreateNew) {
+                    $this->stdout("Creating...\n");
+
+                    $shopElement = new ShopCmsContentElement();
+                    $shopElement->content_id = $this->_content_id;
+                    $shopElement->name = $cloudShopProductName;
+                    $shopElement->external_id = (string)$cloudShopProductId;
+                    $shopElement->active = "N";
+                    if (!$shopElement->save()) {
+                        throw new Exception("Не создан элемент: ".print_r($shopElement->errors, true));
+                    }
+
+                    $shopProduct = new ShopProduct();
+                    $shopProduct->id = $shopElement->id;
+
+                    if (!$shopProduct->save()) {
+                        throw new Exception("Не создан товар: ".print_r($shopProduct->errors, true));
+                    }
+
+                    $this->stdout("\tТовар создан {$shopProduct->id}\n", Console::FG_GREEN);
                 }
 
-                $this->stdout("\tТовар создан {$shopProduct->id}\n", Console::FG_GREEN);
             }
 
             $shopProduct->quantity = 0;
