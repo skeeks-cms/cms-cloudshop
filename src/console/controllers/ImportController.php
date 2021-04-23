@@ -195,8 +195,6 @@ class ImportController extends Controller
         } catch (\Exception $e) {
             throw $e;
         }
-
-        \Yii::$app->shop->updateAllQuantities();
     }
 
     protected function _addProduct($data)
