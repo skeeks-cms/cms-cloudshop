@@ -12,14 +12,11 @@ use skeeks\cms\backend\widgets\ActiveFormBackend;
 use skeeks\cms\base\Component;
 use skeeks\cms\cloudshop\assets\CloudshopAsset;
 use skeeks\cms\shop\models\ShopStore;
-use skeeks\cms\shop\models\ShopSupplier;
 use skeeks\yii2\form\fields\FieldSet;
 use skeeks\yii2\form\fields\SelectField;
 use yii\base\Exception;
 use yii\helpers\ArrayHelper;
 /**
- * @property ShopSupplier $shopSupplier
- *
  * @author Semenov Alexander <semenov@skeeks.com>
  */
 class CloudshopComponent extends Component
