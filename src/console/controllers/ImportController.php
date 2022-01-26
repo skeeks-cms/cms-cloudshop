@@ -337,7 +337,8 @@ class ImportController extends Controller
             $qStore = ShopStore::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
                 
             if (!$shopStore = $qStore->andWhere(['external_id' => $id])->one()) {
-                throw new Exception("Склада нет!");
+                continue;
+                //throw new Exception("Склада нет!");
             }
 
             $shopStoreProduct = $shopProduct->getShopStoreProducts()->joinWith('shopStore as shopStore')->andWhere(['shopStore.id' => $shopStore->id])->one();
