@@ -106,7 +106,7 @@ class ImportController extends Controller
             }
         }
 
-        $q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
+        /*$q = ShopTypePrice::find()->where(['cms_site_id' => \Yii::$app->skeeks->site->id]);
         if (!$q->andWhere(['external_id' => 'cost'])->exists()) {
             $shopTypePrice = new ShopTypePrice();
             $shopTypePrice->name = "Себестоимость";
@@ -116,7 +116,7 @@ class ImportController extends Controller
             if (!$shopTypePrice->save()) {
                 throw new Exception("Цена cost не создана!" . print_r($shopTypePrice->errors));
             }
-        }
+        }*/
     }
 
 
