@@ -167,10 +167,10 @@ class ImportController extends Controller
         }
 
         //Обнулить количество по всем товарам
-        if ($updated = ShopStoreProduct::updateAll(['quantity' => 0], ['in', 'shop_store_id', $qStore->select([ShopStore::tableName() . '.id'])])) {
+        /*if ($updated = ShopStoreProduct::updateAll(['quantity' => 0], ['in', 'shop_store_id', $qStore->select([ShopStore::tableName() . '.id'])])) {
             $this->stdout("Обнулено: " . $updated . "\n", Console::FG_YELLOW);
             sleep(5);
-        }
+        }*/
 
 
         $this->_content_id = $shopContent->content->id;
